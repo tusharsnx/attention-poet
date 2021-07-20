@@ -131,3 +131,5 @@ dmypy.json
 
 #vscode
 .vscode/
+
+/cc.hi.300.*
