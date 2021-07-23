@@ -5,14 +5,15 @@ class MaskedLoss(tf.keras.losses.Loss):
     def __init__(self):
         super().__init__()
         self.name="masked-loss"
-        self.loss_function = tf.keras.losses.SparseCategoricalCrossentropy()
+        self.loss_function = tf.keras.losses.SparseCategoricalCrossentropy(reduction='none')
 
     def call(self, y_true, y_pred):
         mask = tf.cast(tf.math.logical_not(tf.math.equal(y_true, 0)), dtype=tf.float32)
-        print("done")
+        print(mask.shape, y_true.shape, y_pred.shape)
         loss = self.loss_function(y_true, y_pred)
+        print("loss:", loss.shape)
         loss *= mask
-        return loss
+        return tf.reduce_sum(loss)/tf.reduce_sum(mask)
 
 
 # custom Accuracy for model
@@ -23,7 +24,7 @@ class MaskedAccuracy(tf.keras.metrics.Metric):
 
     def update_state(self, y_true, y_pred, sample_weight=None):
         mask = tf.cast(tf.math.logical_not(tf.math.equal(y_true, 0)), dtype=tf.float32)
-        accuracies =  tf.cast(tf.math.equal(y_true, tf.argmax(y_pred, axis=-1)), dtype=tf.float32)
+        accuracies =  tf.cast(tf.math.equal(tf.cast(y_true, dtype=tf.int64), tf.argmax(y_pred, axis=-1)), dtype=tf.float32)
         accuracies *= mask
         
         if sample_weight is not None:
@@ -31,7 +32,7 @@ class MaskedAccuracy(tf.keras.metrics.Metric):
             sample_weight = tf.broadcast_to(sample_weight, accuracies.shape)
             accuracies = tf.multiply(accuracies, sample_weight)
 
-        self.accuracy = self.accuracy.assign((self.accuracy + (tf.reduce_sum(accuracies) / tf.reduce_sum(mask))) / 2)
+        self.accuracy = self.accuracy.assign(tf.reduce_sum(accuracies)/tf.reduce_sum(mask))
     
     def result(self):
         return self.accuracy
