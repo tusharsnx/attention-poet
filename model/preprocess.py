@@ -9,14 +9,14 @@ class Preprocessor:
         self.vocab: List[str] = None
         self.word_ids: Dict[str, int] = None
         self.rev_word_ids:  Dict[int, str] = None
-        self.vocab_size = None
-        self.tokenizer = tf.keras.layers.experimental.preprocessing.TextVectorization(max_tokens=vocab_size,
-                                        output_sequence_length=self.seq_len, standardize=self.custom_standardize
+        self.vocab_size = vocab_size
+        self.tokenizer = tf.keras.layers.experimental.preprocessing.TextVectorization(max_tokens=self.vocab_size,
+                                        output_sequence_length=self.seq_len, standardize=self._custom_standardize
                                         )
 
     def __call__(self, inputs):
 
-        inputs = tf.constant(inputs)
+        inputs = tf.constant(inputs, dtype=tf.string)
         assert tf.rank(inputs)==2, "inputs rank must be 2, add or reduce extra axis"
 
         # encoding into utf8
@@ -34,11 +34,12 @@ class Preprocessor:
         return tf.constant(tokenized_seq)
 
     @staticmethod
-    def add_extra(inputs):
-        inputs = tf.constant(inputs)
-        return [["[SURU] "]]+inputs+[[" [KHATAM]"]]
+    def _add_extra(inputs):
+        start_token = tf.constant([["[SURU] "]], dtype=inputs.dtype)
+        end_token = tf.constant([[" [KHATAM]"]], dtype=inputs.dtype)
+        return start_token+inputs+end_token
     
-    def custom_standardize(self, text):
+    def _custom_standardize(self, text):
         ''' Implements custom standardizing strategy
         '''
         return text
@@ -46,16 +47,16 @@ class Preprocessor:
     
     def build_vocab(self, inputs) -> List[str]:
 
-        inputs = tf.constant(inputs)
+        inputs = tf.constant(inputs, dtype=tf.string)
         assert tf.rank(inputs)==2, "inputs rank must be 2, add or reduce extra axis"
 
-        self.tokenizer.adapt(self.add_extra(inputs))
+        self.tokenizer.adapt(self._add_extra(inputs))
         self.vocab = self.tokenizer.get_vocabulary()
         self.vocab_size = len(self.vocab)
-        self.build_dictionary(self.vocab)
+        self._build_dictionary(self.vocab)
         return self.vocab
 
-    def build_dictionary(self, vocab_list: List[str]) -> None:
+    def _build_dictionary(self, vocab_list: List[str]) -> None:
         word_ids = dict()
         rev_word_ids = dict()
         for i, item in enumerate(vocab_list):

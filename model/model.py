@@ -1,11 +1,6 @@
 import numpy as np
 import tensorflow as tf
 
-MAX_VOCAB_SIZE = 10000
-EMBEDDING_DIM = 200
-DFF = 512
-D_MODEL = 256
-MAX_SEQ_LEN = 10
 
 class FFN(tf.keras.layers.Layer):
     def  __init__(self, d_model, dff):
@@ -89,14 +84,14 @@ class Poet(tf.keras.models.Model):
                                 np.arange(self.embedding_dims)[np.newaxis, :],
                                 self.d_model
                                 )
-
+                                
         # apply sin to even indices in the array; 2i
         angle_rads[:, 0::2] = np.sin(angle_rads[:, 0::2])
 
         # apply cos to odd indices in the array; 2i+1
         angle_rads[:, 1::2] = np.cos(angle_rads[:, 1::2])
 
-        pos_encoding = angle_rads[np.newaxis, ...]
+        pos_encoding = angle_rads[np.newaxis, :]
 
         return tf.cast(pos_encoding, dtype=tf.float32)
     
