@@ -9,9 +9,7 @@ class MaskedLoss(tf.keras.losses.Loss):
 
     def call(self, y_true, y_pred):
         mask = tf.cast(tf.math.logical_not(tf.math.equal(y_true, 0)), dtype=tf.float32)
-        print(mask.shape, y_true.shape, y_pred.shape)
         loss = self.loss_function(y_true, y_pred)
-        print("loss:", loss.shape)
         loss *= mask
         return tf.reduce_sum(loss)/tf.reduce_sum(mask)
 
