@@ -14,7 +14,7 @@ class Preprocessor:
                                         output_sequence_length=self.seq_len, standardize=self._custom_standardize
                                         )
 
-    def __call__(self, inputs):
+    def __call__(self, inputs, training=False):
 
         inputs = tf.constant(inputs, dtype=tf.string)
         assert tf.rank(inputs)==2, "inputs rank must be 2, add or reduce extra axis"
@@ -23,21 +23,34 @@ class Preprocessor:
         encoded_seq = tf_txt.normalize_utf8(inputs, "NFKD")
 
         # tokenizing into 'seq_len' num of tokens
-        tokenized_seq = self.tokenizer(self.add_extra(encoded_seq))
+        tokenized_seq = self.tokenizer(self._add_extra(encoded_seq, training=training))            # (None, seq_len)
 
-        # adding end token back if gets cliped
-        end_token = np.array([self.word_ids["[KHATAM]"]])[:, np.newaxis]
+        if not training:
+            return tokenized_seq                                                
+
+        # adding end token back if gets cliped and adding padding_token to increase seq_len by 1
         tokenized_seq = tokenized_seq.numpy()
-        tokenized_seq[(tokenized_seq[:, -1]==0)==0, -1] = end_token
 
-        # returning as tensor
-        return tf.constant(tokenized_seq)
+        end_token = self.word_ids["[KHATAM]"]
+        extra_token_function = lambda x: end_token if (x[-1]!=0) else 0
+
+        # generating token to be added at the last for the batch
+        extra_token = np.apply_along_axis(extra_token_function, 1, tokenized_seq)
+
+        # new tokenized_seq with increased sequence length(seq_len)
+        tokenized_seq = np.hstack((tokenized_seq, extra_token[:, np.newaxis]))                       # (None, seq_len+1)
+
+        # returning as input tensor and target tensor shifted by 1 position
+        return tf.constant(tokenized_seq[:, :-1]), tf.constant(tokenized_seq[:, 1:])                                                # (None, seq_len), (None, seq_len)
 
     @staticmethod
-    def _add_extra(inputs):
+    def _add_extra(inputs, training=False):
         start_token = tf.constant([["[SURU] "]], dtype=inputs.dtype)
         end_token = tf.constant([[" [KHATAM]"]], dtype=inputs.dtype)
-        return start_token+inputs+end_token
+        if training:
+            return  start_token+inputs+end_token
+        else:
+            return start_token+inputs
     
     def _custom_standardize(self, text):
         ''' Implements custom standardizing strategy
@@ -50,7 +63,7 @@ class Preprocessor:
         inputs = tf.constant(inputs, dtype=tf.string)
         assert tf.rank(inputs)==2, "inputs rank must be 2, add or reduce extra axis"
 
-        self.tokenizer.adapt(self._add_extra(inputs))
+        self.tokenizer.adapt(self._add_extra(inputs, training=True))
         self.vocab = self.tokenizer.get_vocabulary()
         self.vocab_size = len(self.vocab)
         self._build_dictionary(self.vocab)
