@@ -4,13 +4,13 @@ import tensorflow_text as tf_txt
 import numpy as np
 
 class Preprocessor:
-    def __init__(self, vocab_size, seq_len=10):
+    def __init__(self, max_vocab_size, seq_len=10):
         self.seq_len = seq_len
         self.vocab: List[str] = None
         self.word_ids: Dict[str, int] = None
         self.rev_word_ids:  Dict[int, str] = None
-        self.vocab_size = vocab_size
-        self.tokenizer = tf.keras.layers.experimental.preprocessing.TextVectorization(max_tokens=self.vocab_size,
+        self.vocab_size = None
+        self.tokenizer = tf.keras.layers.experimental.preprocessing.TextVectorization(max_tokens=max_vocab_size,
                                         output_sequence_length=self.seq_len, standardize=self._custom_standardize
                                         )
 
@@ -19,11 +19,8 @@ class Preprocessor:
         inputs = tf.constant(inputs, dtype=tf.string)
         assert tf.rank(inputs)==2, "inputs rank must be 2, add or reduce extra axis"
 
-        # encoding into utf8
-        encoded_seq = tf_txt.normalize_utf8(inputs, "NFKD")
-
         # tokenizing into 'seq_len' num of tokens
-        tokenized_seq = self.tokenizer(self._add_extra(encoded_seq, training=training))            # (None, seq_len)
+        tokenized_seq = self.tokenizer(self._add_extra(inputs, training=training))            # (None, seq_len)
 
         if not training:
             return tokenized_seq                                                
@@ -48,7 +45,8 @@ class Preprocessor:
         start_token = tf.constant([["[SURU] "]], dtype=inputs.dtype)
         end_token = tf.constant([[" [KHATAM]"]], dtype=inputs.dtype)
         if training:
-            return  start_token+inputs+end_token
+            data = start_token+inputs+end_token
+            return  data
         else:
             return start_token+inputs
     
@@ -65,7 +63,7 @@ class Preprocessor:
 
         self.tokenizer.adapt(self._add_extra(inputs, training=True))
         self.vocab = self.tokenizer.get_vocabulary()
-        self.vocab_size = len(self.vocab)
+        self.vocab_size = self.tokenizer.vocabulary_size()
         self._build_dictionary(self.vocab)
         return self.vocab
 
@@ -89,5 +87,5 @@ class Preprocessor:
                 else:
                     break
             texts.append([string.strip(" ")])
-        return texts
+        return np.array(texts)
 

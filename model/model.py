@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+from tensorflow.random import categorical
 
 
 class FFN(tf.keras.layers.Layer):
@@ -117,4 +118,15 @@ class Poet(tf.keras.models.Model):
         outputs = self.final_layer(x)
         
         return outputs
+
+    def generate(self, inputs):
+        curr_seq = inputs.numpy()
+        padded_pos = tf.math.equal(curr_seq, 0)
+
+        for i in range(self.preprocessor.seq_len):
+            next_id = categorical(self.call(curr_seq)[0, i:i+1, :], 1)[0, 0]
+            if padded_pos[:, i].numpy(): 
+                curr_seq[:, i] = next_id
+
+        return curr_seq
 
