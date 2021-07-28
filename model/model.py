@@ -119,7 +119,7 @@ class Poet(tf.keras.models.Model):
         
         return outputs
 
-    def generate(self, inputs):
+    def generate(self, inputs, return_seq=False):
         curr_seq = inputs.numpy()
         padded_pos = tf.math.equal(curr_seq, 0)
 
@@ -127,6 +127,8 @@ class Poet(tf.keras.models.Model):
             next_id = categorical(self.call(curr_seq)[0, i:i+1, :], 1)[0, 0]
             if padded_pos[:, i].numpy(): 
                 curr_seq[:, i] = next_id
-
-        return curr_seq
+        if return_seq:
+            return self.preprocessor.get_text(curr_seq)[0, 0], curr_seq
+        return self.preprocessor.get_text(curr_seq)[0, 0]
+            # self.model.preprocessor.get_text(seq)[(0, 0)]
 

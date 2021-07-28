@@ -7,8 +7,8 @@ class SeqGenerateCallback(Callback):
         self.trigger_seq = trigger_seq
         
     def on_epoch_end(self, epoch, logs=None):
-        seq = self.model.generate(self.trigger_seq)
+        text, seq = self.model.generate(self.trigger_seq, return_seq=True)
         print(f"after epoch {epoch} model generates:")
         print("actual sequence: ", seq)
-        print("generated text sequence: ", self.model.preprocessor.get_text(seq)[(0, 0)])
+        print("generated text sequence: ", text)
         
