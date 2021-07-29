@@ -69,20 +69,20 @@ def preprocess(textline):
 
 # with open("output.txt", "w") as f:
 #     print(preprocess("मेरे सीने में नहीं तो तेरे सीने में| सही,hello,"), file=f)
-
-newline_count = 0
-with open("temp_data.tsv", "r") as fin:
-    with open("preprocessed_data.tsv", "w") as fout:
-        for line in fin:
-            
-            if line=="\n":
-                newline_count+=1
-            
-            else:
-                if newline_count<=1:
-                    fout.write(preprocess(line)+"\n")
+if __name__== "__main__":
+    newline_count = 0
+    with open("datasets/temp_data.tsv", "r") as fin:
+        with open("datasets/preprocessed_data.tsv", "w") as fout:
+            for line in fin:
                 
-                elif newline_count>2:
-                    fout.write("\n"*3)
-                    fout.write(preprocess(line)+"\n")
-                newline_count=0
+                if line=="\n":
+                    newline_count+=1
+                
+                else:
+                    if newline_count<=1:
+                        fout.write(preprocess(line)+"\n")
+                    
+                    elif newline_count>2:
+                        fout.write("\n"*3)
+                        fout.write(preprocess(line)+"\n")
+                    newline_count=0

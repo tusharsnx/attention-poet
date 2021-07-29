@@ -134,5 +134,5 @@ dmypy.json
 
 /cc.hi.300.*
 
-/*data.tsv
-/backup.tsv
+*data.tsv
+backup.tsv
