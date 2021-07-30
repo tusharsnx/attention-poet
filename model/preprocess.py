@@ -56,12 +56,12 @@ class Preprocessor:
         return text
 
     
-    def build_vocab(self, inputs, reset_state: bool =True) -> List[str]:
+    def build_vocab(self, inputs) -> List[str]:
 
         inputs = tf.constant(inputs, dtype=tf.string)
         assert tf.rank(inputs)==2, "inputs rank must be 2, add or reduce extra axis"
 
-        self.tokenizer.adapt(self._add_extra(inputs, training=True), reset_state=reset_state)
+        self.tokenizer.adapt(self._add_extra(inputs, training=True))
         self.vocab = self.tokenizer.get_vocabulary()
         self.vocab_size = self.tokenizer.vocabulary_size()
         self._build_dictionary(self.vocab)

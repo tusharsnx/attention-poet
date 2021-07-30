@@ -58,7 +58,7 @@ class Block(tf.keras.layers.Layer):
 
 
 class Poet(tf.keras.models.Model):
-    def __init__(self, preprocessor, num_blocks=1, d_model=256, dff=512, heads=8, embedding_dims=100):
+    def __init__(self, preprocessor, num_blocks=1, d_model=256, dff=512, heads=8, embedding_dims=100, rate=0.1):
         super().__init__()
         self.d_model = d_model
         self.preprocessor = preprocessor
@@ -71,7 +71,7 @@ class Poet(tf.keras.models.Model):
         self.embedding_layer = tf.keras.layers.Embedding(input_dim=self.preprocessor.vocab_size, 
                                             output_dim=self.embedding_dims, mask_zero=True, input_length=self.preprocessor.seq_len
                                             )
-        self.blocks = [Block(d_model=self.d_model, dff=dff, heads=heads) for i in range(self.num_blocks)]
+        self.blocks = [Block(d_model=self.d_model, dff=dff, heads=heads, rate=rate) for i in range(self.num_blocks)]
 
         self.final_layer = tf.keras.layers.Dense(self.preprocessor.vocab_size, activation="softmax")
     
