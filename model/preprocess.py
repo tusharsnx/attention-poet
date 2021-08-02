@@ -20,7 +20,7 @@ class Preprocessor:
         assert tf.rank(inputs)==2, "inputs rank must be 2, add or reduce extra axis"
 
         # tokenizing into 'seq_len' num of tokens
-        tokenized_seq = self.tokenizer(self._add_extra(inputs, training=training))            # (None, seq_len)
+        tokenized_seq = self.tokenizer(self._add_extra(inputs, training=training))                   # (None, seq_len)
 
         if not training:
             return tokenized_seq                                                
@@ -35,10 +35,10 @@ class Preprocessor:
         extra_token = np.apply_along_axis(extra_token_function, 1, tokenized_seq)
 
         # new tokenized_seq with increased sequence length(seq_len)
-        tokenized_seq = np.hstack((tokenized_seq, extra_token[:, np.newaxis]))                       # (None, seq_len+1)
+        tokenized_seq = np.hstack((tokenized_seq, extra_token[:, np.newaxis]))                      # (None, seq_len+1)
 
         # returning as input tensor and target tensor shifted by 1 position
-        return tf.constant(tokenized_seq[:, :-1]), tf.constant(tokenized_seq[:, 1:])                                                # (None, seq_len), (None, seq_len)
+        return tf.constant(tokenized_seq[:, :-1]), tf.constant(tokenized_seq[:, 1:])                    # (None, seq_len), (None, seq_len)
 
     @staticmethod
     def _add_extra(inputs, training=False):

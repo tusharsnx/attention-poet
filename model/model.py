@@ -119,12 +119,16 @@ class Poet(tf.keras.models.Model):
         
         return outputs
 
-    def generate(self, inputs, return_seq=False):
+    def generate(self, inputs, return_seq=False, temperature=1):
         curr_seq = inputs.numpy()
         padded_pos = tf.math.equal(curr_seq, 0)
 
         for i in range(self.preprocessor.seq_len):
-            next_id = categorical(self.call(curr_seq)[0, i:i+1, :], 1)[0, 0]
+            probab = self.call(curr_seq)[0, i:i+1, :]
+            # shutting probabilities according to temperature
+            mask = tf.cast(tf.logical_not(tf.math.less(probab, 1-temperature)), dtype=tf.float32)
+            probab *= mask
+            next_id = categorical(probab, 1)[0, 0]
             if padded_pos[:, i].numpy(): 
                 curr_seq[:, i] = next_id
         if return_seq:
