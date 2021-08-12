@@ -5,13 +5,13 @@ import time
 
 class PoemSpider(scrapy.Spider):
     name = "poemspider"
-    start_urls = ["https://www.amarujala.com/kavya/mere-alfaz/savita-sharma-chaha-jisko-humne-woh-mila-hi-nahi?src=rcmd"]
+    start_urls = ["https://www.amarujala.com/kavya/mere-alfaz/anil-yadav-nadi-aur-tum"]
         
     def __init__(self):
         self.base_url = "https://www.amarujala.com"
         self.feed_url = "https://www.amarujala.com/ajax/getKavyaAjaxData"
-        self.feeds_offset = 80  # multiple of 10
-        self.feeds_end = 200     # multiple of 10
+        self.feeds_offset = 300  # multiple of 10
+        self.feeds_end = 500     # multiple of 10
         self.parsed_poems = 0
         self.skipped_poems = 0
 
