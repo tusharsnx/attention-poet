@@ -10,17 +10,17 @@ class PoemSpider(scrapy.Spider):
     def __init__(self):
         self.base_url = "https://www.amarujala.com"
         self.feed_url = "https://www.amarujala.com/ajax/getKavyaAjaxData"
-        self.feeds_offset = 0  # multiple of 10
-        self.feeds_end = 80     # multiple of 10
+        self.feeds_offset = 80  # multiple of 10
+        self.feeds_end = 200     # multiple of 10
         self.parsed_poems = 0
         self.skipped_poems = 0
 
         # to check if site already scraped including previous crawls
         self.visited_urls = set()
-        with open("scrapped.json", "r") as f:
-            data = f.read()
-            if data:
-                data = json.loads(data)
+        data = []
+        with open("scraped_all.json", "r") as f:
+            for line in f:
+                data.append(json.loads(line))
 
         for item in data:
             try:

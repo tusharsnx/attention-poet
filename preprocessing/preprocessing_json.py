@@ -1,9 +1,10 @@
 import re
 import json
+import argparse
 
 # removes character present in pattern
 def remove_stuff(word):
-    pattern = r"[.…”“';()]*"
+    pattern = r"[.…”“';()*]*"
     return re.sub(pattern, "", word)
 
 # assumes ch is at the end -> "token ch" eg. (आग। to आग ।)
@@ -16,11 +17,12 @@ def remove_english_token(string):
     result = re.sub(pattern=english_pattern, repl="", string=string)
     return result
 
-def combined_poems(string):
-    if string.startswith("-"):  
-        return True
-    else: 
-        return False
+def combined_poems_poet_names(string):
+    for ch in ["-", "~"]:
+        if string.startswith(ch):  
+            return True 
+    
+    return False
 
 # change "आग," or "आग|" to "आग ," or "आग |"
 # ch = "-" , "," , "!"
@@ -93,14 +95,32 @@ def preprocess(textline):
     return string.strip()
 
 if __name__== "__main__":
-    with open("scrapper/scrapped.json", "r") as fin:
-        data = json.load(fin)
+    
+    parser = argparse.ArgumentParser(description="Preprocesses json to text data")
+    parser.add_argument("--combine", default=False, action="store_true")    # argument for combining the recent crawls data to all data.
+    args = parser.parse_args()
+    # print(args.combine)
+    
+    if args.combine:
+        data = []
+        with open("scrapper/scraped_all.json", "a") as original:
+            with open("scrapper/scraped.json", "r") as fin:
+                for line in fin:
+                    original.write(line)
+                    data.append(json.loads(line))
+    
+    else:
+        data = []
+        with open("scrapper/scraped.json", "r") as fin:
+            for line in fin:
+                data.append(json.loads(line))
 
+    poems = 0
     poem_data = ""
     for poem in data:
         direct = False  # detects poet's name at the last line and skips adding extra whitespaces
         for line in poem["lines"]:
-            if combined_poems(line):
+            if combined_poems_poet_names(line):
                 poem_data+="\n\n\n"
                 direct = True
                 continue
@@ -111,7 +131,10 @@ if __name__== "__main__":
                 direct = False
         
         if not direct:
+            poems+=1
             poem_data+="\n\n\n"
-
+    
+    print(f"poems detected: {poems}")
+    
     with open("datasets/preprocessed_data.tsv", "w") as fout:
         fout.write(poem_data)
