@@ -22,9 +22,6 @@ def punctuation_token(string: str, ch: str, first_time: bool = False):
     
         for token in tokens:
 
-            if token=="हूं”":
-                print(first_time)
-
             #  handling ch in the token when first_time
             if first_time:
                 if "?" in token:
@@ -68,11 +65,12 @@ def preprocess(textline):
     return string.strip()
 
 # with open("output.txt", "w") as f:
-#     print(preprocess("मेरे सीने में नहीं तो तेरे सीने में| सही,hello,"), file=f)
+#        print(preprocess("मेरे सीने में नहीं तो तेरे सीने में| सही,hello,"), file=f)
 if __name__== "__main__":
     newline_count = 0
     with open("datasets/temp_data.tsv", "r") as fin:
         with open("datasets/preprocessed_data.tsv", "w") as fout:
+            poems=0
             for line in fin:
                 
                 if line=="\n":
@@ -84,5 +82,7 @@ if __name__== "__main__":
                     
                     elif newline_count>2:
                         fout.write("\n"*3)
+                        poems+=1
                         fout.write(preprocess(line)+"\n")
                     newline_count=0
+    print(f"poems detected: {poems}")

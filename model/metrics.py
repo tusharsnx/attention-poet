@@ -5,11 +5,11 @@ class MaskedLoss(tf.keras.losses.Loss):
     def __init__(self):
         super().__init__()
         self.name="masked-loss"
-        self.loss_function = tf.keras.losses.SparseCategoricalCrossentropy(reduction='none')
+        self.loss_function = tf.keras.losses.SparseCategoricalCrossentropy(reduction='none', from_logits=True)
 
-    def call(self, y_true, y_pred):
+    def call(self, y_true, y_pred_logits):
         mask = tf.cast(tf.math.logical_not(tf.math.equal(y_true, 0)), dtype=tf.float32)
-        loss = self.loss_function(y_true, y_pred)
+        loss = self.loss_function(y_true, y_pred_logits)
         loss *= mask
         return tf.reduce_sum(loss)/tf.reduce_sum(mask)
 
