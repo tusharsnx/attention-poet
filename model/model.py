@@ -154,7 +154,7 @@ class Poet(tf.keras.models.Model):
         
         return outputs
 
-    def generate(self, inputs, return_seq=False, temperature=1):
+    def generate(self, inputs, return_seq=False, temperature=1, use_temperature=True):
         curr_seq = inputs.numpy()
         padded_pos = tf.math.equal(curr_seq, 0)
 
@@ -163,14 +163,27 @@ class Poet(tf.keras.models.Model):
             # shutting probabilities according to temperature
             # mask = tf.cast(tf.logical_not(tf.math.less(probab, 1-temperature)), dtype=tf.float32)
             # probab *= mask
-            if temperature==0:
-                temperature=1e-9
-            logits /= temperature
-            probab = tf.keras.activations.softmax(logits)
-            next_id = categorical(probab, 1)[0, 0]
-            if padded_pos[:, i].numpy(): 
-                curr_seq[:, i] = next_id
-            print("current_seq: ", curr_seq)
+            if use_temperature:
+                if temperature==0:
+                    temperature=1e-9
+                logits /= temperature
+                probab = tf.keras.activations.softmax(logits)
+                next_id = categorical(probab, 1)[0, 0]
+                if padded_pos[:, i].numpy(): 
+                    curr_seq[:, i] = next_id
+                print("current_seq: ", curr_seq)
+
+            else:
+                # shutting probabilities according to temperature
+                probab = tf.keras.activations.softmax(logits)
+                mask = tf.cast(tf.logical_not(tf.math.less(probab, 1-temperature)), dtype=tf.float32)
+                print("current timestep probablities:\n", tf.reduce_sum(tf.logical_not(tf.math.equal(probab, 0))).numpy())
+                probab *= mask
+                print("current timestep probablities after mask:\n", tf.reduce_sum(tf.logical_not(tf.math.equal(probab, 0))).numpy())
+                next_id = categorical(probab, 1)[0, 0]
+                if padded_pos[:, i].numpy(): 
+                    curr_seq[:, i] = next_id
+
         if return_seq:
             return self.preprocessor.get_text(curr_seq)[0, 0], curr_seq
         return self.preprocessor.get_text(curr_seq)[0, 0]
