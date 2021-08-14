@@ -170,6 +170,7 @@ class Poet(tf.keras.models.Model):
             next_id = categorical(probab, 1)[0, 0]
             if padded_pos[:, i].numpy(): 
                 curr_seq[:, i] = next_id
+            print("current_seq: ", curr_seq)
         if return_seq:
             return self.preprocessor.get_text(curr_seq)[0, 0], curr_seq
         return self.preprocessor.get_text(curr_seq)[0, 0]

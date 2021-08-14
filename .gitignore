@@ -140,3 +140,5 @@ dmypy.json
 
 *.json
 !scraped_all.json
+
+*.pkl
