@@ -56,7 +56,7 @@ def punctuation_token(string: str, ch: str, first_time: bool = False):
                 elif "।" in token:
                     new_tokens.append(end_token(token, ch="।"))
                 elif "|" in token:
-                    new_tokens.append(end_token(token, ch="।"))
+                    new_tokens.append(end_token(token, ch="|"))
                 else:
                     new_tokens.append(token)
             
