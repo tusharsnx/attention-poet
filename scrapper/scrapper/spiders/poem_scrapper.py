@@ -10,8 +10,8 @@ class PoemSpider(scrapy.Spider):
     def __init__(self):
         self.base_url = "https://www.amarujala.com"
         self.feed_url = "https://www.amarujala.com/ajax/getKavyaAjaxData"
-        self.feeds_offset = 300  # multiple of 10
-        self.feeds_end = 500     # multiple of 10
+        self.feeds_offset = 0  # multiple of 10
+        self.feeds_end = 100    # multiple of 10, must be >feed_offset
         self.parsed_poems = 0
         self.skipped_poems = 0
 
